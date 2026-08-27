@@ -124,3 +124,47 @@ Five frozen semantics regressions all passed in GitHub Actions, including exhaus
 See [docs/moving-gateway-theorem.md](docs/moving-gateway-theorem.md) and [docs/moving-gateway-results.md](docs/moving-gateway-results.md).
 
 Novelty status remains cautious: the theorem is validated under the model, but an equivalent-result literature audit is still required before a publication claim.
+
+
+## Theorem B — synchronous gateway dwell
+
+A persistence phase now freezes a weaker, explicitly separated adversary model:
+
+- the core graph F is fixed;
+- only the d target-gateway edges relocate;
+- gateway epochs are synchronized and observable;
+- each gateway set persists for tau+1 agent moves;
+- relocation is atomic at the boundary with b>=d;
+- only gateway sets preserving lambda(s,t)>=d are admissible.
+
+Define A_d(F,s) as the admissible d-gateway family and let rho_tau be the
+minimum number of core vertices whose distance-tau neighborhoods intersect every
+admissible gateway set. Then:
+
+    K*_infty = rho_tau(F,A_d(F,s)).
+
+For d=1 this is exactly the standard distance-tau domination number gamma_tau(F).
+
+For a d-edge-connected core:
+
+    K*_infty =
+      min {|P| : |V(F) \ N_tau[P]| <= d-1}.
+
+Frozen CI validation passed 20/20 clique, path, cycle, and small-grid cases, with
+both the lower threshold k=rho_tau-1 and the upper threshold k=rho_tau checked.
+The full repository suite passed 70 tests.
+
+Key corollaries:
+
+- clique K_m: tau=0 gives K*=m-d+1; tau>=1 gives K*=1;
+- path P_m, d=1: K*=ceil(m/(2tau+1));
+- cycle C_m, d=1: K*=ceil(m/(2tau+1));
+- cycle C_m, d=2: K*=ceil((m-1)/(2tau+1));
+- deciding K*<=k is NP-complete already for d=1,tau=1 via DOMINATING SET.
+
+Theorem B does **not** subsume Theorem A because its adversary cannot edit the
+core. The globally rewritable model with per-edge persistence is explicitly
+parked as Theorem C.
+
+See [docs/theorem-b-gateway-dwell.md](docs/theorem-b-gateway-dwell.md) and
+[docs/theorem-b-results.md](docs/theorem-b-results.md).

@@ -95,3 +95,43 @@ Potential theorem contribution, not yet a novelty claim. Before paper drafting:
 3. investigate a persistence condition that restores a bounded redundancy guarantee.
 
 Do not add another heuristic policy.
+
+
+## Theorem B — synchronous gateway dwell — validated
+- [x] freeze stable-core / gateway-only adversary model
+- [x] require synchronized observable epochs
+- [x] fix dwell to tau+1 agent moves
+- [x] define admissible gateway family A_d(F,s) using lambda(s,t)>=d
+- [x] prove K*_infty = rho_tau(F,A_d)
+- [x] recover distance-tau domination at d=1
+- [x] derive d-edge-connected slack-domination corollary
+- [x] derive clique/path/cycle closed forms
+- [x] record NP-completeness for d=1,tau=1 only
+- [x] freeze clique/path/cycle/grid predictions
+- [x] mechanically verify both threshold sides
+- [x] run CI and record results
+- [x] park workflow after validation
+
+### Result
+
+20/20 frozen theorem cases passed; repository suite: 70 passed.
+
+Theorem B characterizes the persistence/redundancy tradeoff in the stable-core
+model: persistence converts sure reachability into a static distance-transversal
+covering problem.
+
+### Model caveat
+
+Theorem B uses a weaker adversary than Theorem A. It does not answer the globally
+rewritable per-edge-persistence question.
+
+## Theorem C — PARKED
+
+No code, conjecture, or experiment is scheduled yet for:
+- globally rewritable cores with tau-persistent edges;
+- b<d;
+- staggered gateway dwell;
+- repeated delivery / repeated targets.
+
+Theorem C remains closed until Theorem A+B are written as a manuscript and the
+related-work positioning is complete.
