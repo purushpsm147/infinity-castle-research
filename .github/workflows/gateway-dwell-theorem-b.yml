@@ -1,9 +1,6 @@
 name: gateway-dwell-theorem-b
 
 on:
-  push:
-    branches:
-      - research/gateway-dwell-theorem-b
   workflow_dispatch:
 
 jobs:
