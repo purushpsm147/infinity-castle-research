@@ -134,8 +134,8 @@ def test_slack_distance_domination_equivalence_on_two_connected_core():
 
 
 def test_nonempty_admissible_family_is_required():
-    # A path cannot sustain lambda(s,t)>=2 no matter which two gateways are chosen
-    # when the source is an endpoint: the source degree itself is one.
+    # On a path endpoint, even if the source itself is a gateway, its
+    # augmented degree is at most two. Therefore lambda(s,t)>=3 is impossible.
     core = nx.path_graph(5)
     with pytest.raises(ValueError, match="admissible gateway family"):
-        distance_transversal_number(core, source=0, d=2, tau=1)
+        distance_transversal_number(core, source=0, d=3, tau=1)
