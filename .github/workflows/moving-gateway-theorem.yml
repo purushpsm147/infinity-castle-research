@@ -1,9 +1,6 @@
 name: moving-gateway-theorem
 
 on:
-  push:
-    branches:
-      - research/moving-gateway-theorem
   workflow_dispatch:
 
 jobs:
