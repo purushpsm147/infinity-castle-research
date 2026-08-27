@@ -1,0 +1,28 @@
+name: phase4-fortress-screen
+
+on:
+  push:
+    branches:
+      - phase4-known-arsenals
+  workflow_dispatch:
+
+jobs:
+  screen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m pip install -e .[dev]
+      - run: pytest
+      - name: Run 10-seed known-arsenal screen
+        run: python experiments/run_known_arsenals.py --seeds 10 --horizon 70 --agents 2 4 8 --threshold 0.80 --out results/known_arsenals_screen.csv
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase4-fortress-screen
+          path: |
+            results/known_arsenals_screen.csv
+            results/known_arsenals_screen_summary.csv
+            results/known_arsenals_screen_fortress.csv
