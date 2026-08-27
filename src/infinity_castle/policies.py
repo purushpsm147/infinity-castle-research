@@ -232,3 +232,86 @@ class PhysarumPolicy(Policy):
         for e in list(self.D):
             q = abs(self.last_flux.get(e, 0.0))
             self.D[e] = max(self.floor, self.D[e] + self.dt * (q - self.D[e]))
+
+
+class EntropyRegularizedPolicy(Policy):
+    """Soft shortest-path policy: dispersion without reinforcement or biology."""
+
+    name = "entropy_replan"
+
+    def __init__(self, temperature: float = 1.0):
+        self.temperature = temperature
+
+    def choose_moves(self, graph, positions, target, rng):
+        dist = nx.single_source_shortest_path_length(graph, target)
+        out = []
+        tau = max(self.temperature, 1e-6)
+        for p in positions:
+            if p == target:
+                out.append(p)
+                continue
+            nbrs = list(graph.neighbors(p))
+            if not nbrs:
+                out.append(p)
+                continue
+            costs = np.asarray([dist.get(n, 10**6) for n in nbrs], dtype=float)
+            logits = -costs / tau
+            logits -= logits.max()
+            probs = np.exp(logits)
+            probs /= probs.sum()
+            out.append(nbrs[int(rng.choice(len(nbrs), p=probs))])
+        return out
+
+
+class ElectricalFlowPolicy(PhysarumPolicy):
+    """Fixed-conductance electrical-flow control.
+
+    Uses the same potential/flux routing geometry as PhysarumPolicy but never
+    adapts conductances. This isolates the value of adaptive conductance dynamics.
+    """
+
+    name = "electrical"
+
+    def observe_transition(self, graph_before, positions_before, positions_after, target):
+        self._sync(graph_before)
+        return None
+
+
+class EdgeDisjointPathPolicy(Policy):
+    """Allocate co-located agents across actually edge-disjoint s-t paths.
+
+    Unlike the legacy DisjointPathPolicy, this baseline does not infer
+    "disjointness" from distinct first hops of shortest-simple paths.
+    If fewer edge-disjoint paths exist than agents, paths are reused.
+    """
+
+    name = "edge_disjoint"
+
+    def choose_moves(self, graph, positions, target, rng):
+        grouped: Dict[Node, List[int]] = defaultdict(list)
+        for i, p in enumerate(positions):
+            grouped[p].append(i)
+
+        result = list(positions)
+        for p, idxs in grouped.items():
+            if p == target:
+                continue
+            try:
+                paths = list(nx.edge_disjoint_paths(graph, p, target))
+            except (nx.NetworkXNoPath, nx.NetworkXError):
+                paths = []
+
+            paths = [path for path in paths if len(path) > 1]
+            if not paths:
+                nbrs = list(graph.neighbors(p))
+                if not nbrs:
+                    continue
+                for j, agent_idx in enumerate(idxs):
+                    result[agent_idx] = nbrs[j % len(nbrs)]
+                continue
+
+            # Stable ordering makes the baseline deterministic for a fixed graph.
+            paths.sort(key=lambda path: (len(path), tuple(map(repr, path))))
+            for j, agent_idx in enumerate(idxs):
+                result[agent_idx] = paths[j % len(paths)][1]
+        return result

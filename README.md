@@ -6,71 +6,62 @@ The project started from a simple question inspired by the *Infinity Castle* tho
 
 > Given the same search/redundancy budget, can local adaptive policies allocate that redundancy more efficiently than conventional strategies when an adversary observes the search and rewires the topology in response?
 
-This repository does **not** assume that Physarum/slime-mold dynamics are superior. The biological angle survives only if it beats both strong conventional baselines and a mechanism-matched generic reinforcement control.
+## Current verdict
 
-## v0 game model
+The **Physarum-specific hypothesis is closed for the tested model**.
 
-At round `t`:
+After correcting the original equal-corridor symmetry flaw, validating canonical Physarum shortest-path convergence on unequal corridors, and replacing the weak "disjoint" control with a true edge-disjoint-path baseline, a 30-seed asymmetric sweep found:
 
-1. Agents observe the current graph `G_t`.
+- no reach-probability advantage for transient Physarum adaptation over fixed electrical-flow routing in any paired cell;
+- 0 Physarum wins and 0 electrical wins on reachability across all paired cells (all reach outcomes tied);
+- where work differed, Physarum was generally equal or worse;
+- true edge-disjoint routing was often the strongest baseline on the corridor families.
+
+See [docs/gap-test-results.md](docs/gap-test-results.md).
+
+This repository remains useful as a benchmark/negative-result artifact, but it does **not** claim a novel Physarum algorithm or a novel bounded-rewiring model.
+
+## Game model
+
+At round t:
+
+1. Agents observe the current graph G_t.
 2. A policy selects one legal move per agent.
-3. Moves are executed; traffic on each traversed edge is recorded.
+3. Moves are executed; traffic is recorded.
 4. If any agent reaches the target, the run succeeds.
-5. The adversary observes realized traffic/positions and performs at most `b` **rewires** to construct `G_{t+1}`.
+5. The adversary observes realized traffic/positions and performs at most b connected rewires to construct G_{t+1}.
 
-A rewire removes one edge and inserts one non-edge. v0 keeps the graph simple, connected, and edge-count preserving.
+A rewire removes one edge and inserts one non-edge while preserving simplicity, connectivity, and edge count.
 
-This is intentionally **not** the same parameter as the fixed-footprint / missing-edge bounds used in much temporal-graph exploration literature.
+## Policies
 
-## Policies in v0
+- random walk
+- shortest-path replanning
+- legacy diverse-first-hop baseline
+- true edge-disjoint-path routing
+- generic reinforcement
+- entropy-regularized replanning
+- fixed electrical-flow routing
+- Physarum-inspired transient conductance adaptation
 
-- `random`: random legal neighbor.
-- `replan`: shortest-path replanning on the current graph.
-- `disjoint`: spreads agents over distinct current shortest routes when available.
-- `reinforcement`: simple non-biological edge reinforcement + decay.
-- `physarum`: conductance dynamics driven by electrical flow from current agent mass to the target.
+The canonical fixed-source/fixed-sink Physarum helper is kept separately for validation.
 
-## Adversaries in v0
+## Important prior art
 
-- `none`: no topology changes.
-- `oblivious`: random connected rewiring, independent of current traffic.
-- `traffic_aware`: preferentially removes highly used edges and chooses replacement edges that avoid gifting obvious shortcuts.
-- `reactive_cut`: position-aware adversary that attacks edges on the agents’ current shortest-path frontier; stronger than traffic-aware but still does not inspect policy internals or future random bits.
+Limited link rewiring during target-node search and graph exploration is already studied in the random-walk literature (IEEE COMPSAC 2024, with a broader 2025 follow-up). Network interdiction / robust routing is also a mature field. Accordingly:
 
-## Primary measurements
+- top-b traffic mass and entropy are diagnostics, not novelty claims;
+- the rewiring model itself is not presented as new;
+- any future research extension requires a fresh literature review before implementation.
 
-For a fixed horizon `H`:
-
-- `P_reach`: empirical probability that at least one agent reaches the target.
-- `T_reach`: rounds to first success.
-- `W`: total traversals performed by all agents.
-- `K_max`: peak number of active agents.
-
-The research target is a **Pareto frontier**, not one cherry-picked scalar.
-
-## Falsification gates
-
-The biological hypothesis is *not* supported merely because Physarum beats random walk.
-
-It must clear, on held-out instances/seeds:
-
-1. random walk,
-2. shortest-path replanning,
-3. disjoint-path redundancy,
-4. generic reinforcement with the same observation and memory class.
-
-If generic reinforcement reproduces the Physarum frontier, the Physarum-specific hypothesis is dead and the result is instead about adaptive reinforcement.
-
-See [`docs/preregistration.md`](docs/preregistration.md).
-
-## Quick start
+## Reproduce
 
 ```bash
 python -m pip install -e .[dev]
 pytest
-python experiments/run_sweep.py --seeds 30 --horizon 80 --out results/smoke.csv
+python experiments/run_gap_test.py --seeds 30 --horizon 45 --out results/gap_test.csv
 ```
 
-## Status
+## Research discipline
 
-`v0.1` is an instrument-validation stage. Phase 1 hardens baselines, adds route concentration/entropy metrics, and tests analytic sanity checks against layered/parallel-path graphs before any application claim.
+A null is allowed to stay null. The current Physarum line is closed unless a materially different, literature-grounded question is identified first.

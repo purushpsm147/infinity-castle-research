@@ -1,0 +1,27 @@
+name: gap-test
+
+on:
+  push:
+    branches:
+      - research/phase-1-math-baselines
+  workflow_dispatch:
+
+jobs:
+  asymmetric-gap-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m pip install -e .[dev]
+      - run: pytest
+      - run: python experiments/run_gap_test.py --seeds 30 --horizon 45 --out results/gap_test.csv
+      - uses: actions/upload-artifact@v4
+        with:
+          name: asymmetric-gap-test
+          path: |
+            results/gap_test.csv
+            results/gap_test_summary.csv
+            results/gap_test_paired.csv

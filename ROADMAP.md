@@ -1,0 +1,35 @@
+# Roadmap
+
+## Phase 0 — instrument validation
+- [x] bounded connected rewiring model
+- [x] baseline policies and adversaries
+- [x] CI workflow
+- [x] invariant tests
+
+## Phase 1 — falsify the Physarum-specific claim
+- [x] identify equal-corridor symmetry problem
+- [x] validate canonical static Physarum on equal corridors
+- [x] validate convergence on unequal [3,5,7] corridors
+- [x] replace weak "disjoint" control with actual edge-disjoint routing
+- [x] run asymmetric 30-seed paired Physarum-vs-electrical sweep
+- [x] apply kill gate
+
+### Verdict
+Closed. No reachability advantage was observed; when work differed, transient Physarum was generally equal or worse than fixed electrical flow.
+
+## Prior-art checkpoint
+- [x] bounded link rewiring during target search/exploration exists in IEEE COMPSAC 2024
+- [x] broader random-walk adversarial rewiring follow-up exists in COMPSAC 2025
+- [x] robust/interdiction objectives are mature literature
+
+## Future work policy
+
+No Phase 2 is scheduled.
+
+Before adding another algorithm or application:
+1. state a precise question;
+2. identify the nearest primary literature;
+3. explain exactly what is not covered;
+4. define a falsifiable experiment before implementation.
+
+If that review does not expose a genuine gap, do not extend the project.
