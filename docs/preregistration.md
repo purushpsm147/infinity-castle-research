@@ -2,39 +2,43 @@
 
 ## Research question
 
-Given equal search-resource and information budgets, does local adaptive flow allocation produce a better held-out success/work frontier than conventional redundancy policies under bounded reactive topology rewiring?
+Does a Physarum-inspired **transient conductance adaptation** improve adversarial navigation over a fixed electrical-flow control on asymmetric graphs under the same information and resource budgets?
 
-## Claims separated in advance
+This is intentionally narrower than the earlier Phase 1 framing.
 
-### H1 — redundancy
-Multiple agents outperform one agent in some bounded-rewiring regimes. Not expected to be novel by itself.
+## Validation prerequisites
 
-### H2 — dispersion / adaptive allocation
-A policy that avoids concentrating attackable traffic can outperform deterministic shortest-path concentration under a reactive adversary.
+Before an adversarial result is interpretable:
 
-### H3 — Physarum-specific adaptation
-Adaptive Physarum conductances outperform both:
-1. fixed electrical-flow routing with the same current-flow geometry, and
-2. non-biological entropy/reinforcement controls,
-under the same observation/resource class.
+1. canonical fixed-source Physarum must preserve symmetry on equal corridors;
+2. canonical fixed-source Physarum must concentrate onto a unique shortest path on unequal corridors;
+3. the conventional redundancy control must use actual edge-disjoint paths;
+4. graph cut size / edge connectivity must be reported alongside k and b.
 
-H3 is the only claim that supports a Physarum-specific mechanism story.
+## Primary hypothesis
 
-## Phase 1 mechanism test
+On at least one predeclared asymmetric graph family and bounded reactive-rewiring regime, adaptive conductance produces a reproducible Pareto improvement over fixed electrical routing in:
+- reach probability, and
+- work conditional on comparable reach probability.
 
-Primary explanatory variables:
-- effective traffic support exp(H);
-- Herfindahl concentration;
-- top-b traffic mass;
-- target progress / hitting time;
-- work.
+The comparison is paired by seed.
 
-The mechanism hypothesis survives only if lower adversarial coverability predicts reachability without merely reflecting aimless random spreading.
+## Controls
 
-## Kill gates
+- shortest-path replanning;
+- true edge-disjoint routing;
+- generic reinforcement;
+- fixed electrical-flow routing.
 
-- If Physarum ~= fixed electrical flow, kill the adaptive-conductance claim.
-- If Physarum ~= entropy-regularized or generic reinforcement, kill the biological-specific claim.
-- If dispersion helps only against the shortest-frontier adversary but disappears against policy-agnostic or predictive adversaries, classify the result as adversary-specific.
-- If robust conventional multipath dominates the adaptive policies, keep the simulator as an educational result and stop the biological thread.
-- Any confirmatory claim requires unseen graph/adversary seeds and frozen hyperparameters.
+## Kill gate
+
+Close the Physarum-specific line if, across the predeclared asymmetric sweep:
+- Physarum does not improve reach probability over fixed electrical flow by a practically meaningful margin, or
+- any apparent reach gain is paid for by a clearly dominated work frontier, or
+- the effect does not survive held-out seeds / asymmetric graph variants.
+
+Do **not** replace a null with a new claim about route entropy or top-b mass. Those quantities may explain behavior but belong to established robust-routing/interdiction territory.
+
+## Evidence standard
+
+The prior two-seed diagnostic is not evidence. Confirmatory reporting requires the frozen asymmetric sweep and held-out seeds.
