@@ -2,41 +2,34 @@
 
 ## Phase 0 — instrument validation
 - [x] bounded connected rewiring model
-- [x] random / replan / disjoint / reinforcement / Physarum policies
-- [x] oblivious / traffic-aware / reactive-cut adversaries
-- [x] no-adversary shortest-path control
+- [x] baseline policies and adversaries
 - [x] CI workflow
+- [x] invariant tests
 
-## Phase 1 — mechanism and baseline hardening
-- [x] parallel-corridor analytic benchmark
-- [x] route entropy / effective support / HHI / top-b mass
-- [x] fixed electrical-flow control
-- [x] entropy-regularized replanning control
-- [x] analytic occupancy survival sanity checks
-- [ ] robust min-cost / multipath baseline
-- [ ] risk-sensitive replanner with attack history
-- [ ] improve disjoint-path policy under changing topologies
-- [ ] scale runtime and cache repeated linear solves
+## Phase 1 — falsify the Physarum-specific claim
+- [x] identify equal-corridor symmetry problem
+- [x] validate canonical static Physarum on equal corridors
+- [x] validate convergence on unequal [3,5,7] corridors
+- [x] replace weak "disjoint" control with actual edge-disjoint routing
+- [x] run asymmetric 30-seed paired Physarum-vs-electrical sweep
+- [x] apply kill gate
 
-## Phase 2 — adversary taxonomy
-- [x] no adversary
-- [x] oblivious rewiring
-- [x] traffic-aware post-position rewiring
-- [x] reactive shortest-frontier attack
-- [ ] public-history predictive adversary
-- [ ] policy-agnostic centrality/min-cut adversary
-- [ ] pre-edit timing model
-- [ ] action-intercept timing model
+### Verdict
+Closed. No reachability advantage was observed; when work differed, transient Physarum was generally equal or worse than fixed electrical flow.
 
-## Phase 3 — confirm mechanism
-- [ ] regress success against top-b traffic mass + progress
-- [ ] conductance ablations
-- [ ] match compute/memory budgets
-- [ ] held-out graph families
-- [ ] bootstrap confidence intervals
+## Prior-art checkpoint
+- [x] bounded link rewiring during target search/exploration exists in IEEE COMPSAC 2024
+- [x] broader random-walk adversarial rewiring follow-up exists in COMPSAC 2025
+- [x] robust/interdiction objectives are mature literature
 
-## Phase 4 — application transfer, only if mechanism survives
-- [ ] contested RF / traffic-aware jamming
-- [ ] P2P eclipse / peer-view manipulation
-- [ ] censorship relay blocking
-- [ ] moving-target-defense dual game
+## Future work policy
+
+No Phase 2 is scheduled.
+
+Before adding another algorithm or application:
+1. state a precise question;
+2. identify the nearest primary literature;
+3. explain exactly what is not covered;
+4. define a falsifiable experiment before implementation.
+
+If that review does not expose a genuine gap, do not extend the project.
