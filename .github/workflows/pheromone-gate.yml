@@ -1,9 +1,6 @@
 name: pheromone-gate
 
 on:
-  push:
-    branches:
-      - research/pheromone-consensus
   workflow_dispatch:
 
 jobs:
