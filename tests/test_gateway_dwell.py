@@ -112,9 +112,8 @@ def test_d_edge_connected_core_makes_every_d_subset_admissible():
     for core, d in [
         (nx.cycle_graph(7), 2),
         (nx.complete_graph(6), 3),
-        (nx.hypercube_graph(3), 3),
+        (nx.complete_bipartite_graph(3, 3), 3),
     ]:
-        # hypercube nodes are already integer-labelled 0..7 in NetworkX
         family = admissible_gateway_sets(core, source=0, d=d)
         assert len(family) == math.comb(core.number_of_nodes(), d)
 
