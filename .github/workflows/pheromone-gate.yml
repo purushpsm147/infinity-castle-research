@@ -1,0 +1,24 @@
+name: pheromone-gate
+
+on:
+  workflow_dispatch:
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m pip install -e .[dev]
+      - run: pytest
+      - run: python experiments/run_pheromone_gate.py --seeds 30 --horizon 70 --agents 8 --out results/pheromone_gate.csv
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pheromone-gate
+          path: |
+            results/pheromone_gate.csv
+            results/pheromone_gate_summary.csv
+            results/pheromone_gate_paired.csv

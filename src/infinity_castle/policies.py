@@ -24,6 +24,10 @@ class Policy(ABC):
     def observe_transition(self, graph_before: nx.Graph, positions_before: List[Node], positions_after: List[Node], target: Node) -> None:
         pass
 
+    def observe_rewire(self, graph_after: nx.Graph, rewires, positions: List[Node], target: Node) -> None:
+        """Optional hook for policies with memory of adversarial topology changes."""
+        pass
+
 
 class RandomWalkPolicy(Policy):
     name = "random"
@@ -315,3 +319,206 @@ class EdgeDisjointPathPolicy(Policy):
             for j, agent_idx in enumerate(idxs):
                 result[agent_idx] = paths[j % len(paths)][1]
         return result
+
+
+
+class PheromoneConsensusPolicy(Policy):
+    """Shared-memory consensus with an optional contrarian minority.
+
+    Memory channels:
+    - progress: repeated traversals that reduce current graph distance to target;
+    - failure: non-progress traversals and recently attacked edges;
+    - volatility: rewiring activity around incident vertices;
+    - evidence: decayed corroboration count used only to track memory strength.
+
+    The target-distance term is deliberately the same current-graph information
+    available to shortest-path baselines. Pheromones add temporal memory, not a
+    hidden oracle.
+
+    contrarian_mode:
+    - "none": all crows follow the consensus branch;
+    - "fixed": each crow is contrarian with fixed_epsilon;
+    - "adaptive": epsilon is chosen from the one-junction reliability formula.
+    """
+
+    name = "pheromone_adaptive"
+
+    def __init__(
+        self,
+        *,
+        contrarian_mode: str = "adaptive",
+        fixed_epsilon: float = 0.25,
+        memory_enabled: bool = True,
+        progress_decay: float = 0.88,
+        failure_decay: float = 0.82,
+        volatility_decay: float = 0.86,
+        evidence_decay: float = 0.90,
+        immediate_weight: float = 1.0,
+        progress_weight: float = 0.75,
+        failure_weight: float = 0.90,
+        volatility_weight: float = 0.45,
+        consensus_temperature: float = 1.0,
+    ):
+        self.contrarian_mode = contrarian_mode
+        self.fixed_epsilon = float(fixed_epsilon)
+        self.memory_enabled = bool(memory_enabled)
+        self.progress_decay = float(progress_decay)
+        self.failure_decay = float(failure_decay)
+        self.volatility_decay = float(volatility_decay)
+        self.evidence_decay = float(evidence_decay)
+        self.immediate_weight = float(immediate_weight)
+        self.progress_weight = float(progress_weight)
+        self.failure_weight = float(failure_weight)
+        self.volatility_weight = float(volatility_weight)
+        self.consensus_temperature = float(consensus_temperature)
+        self.progress: Dict[Edge, float] = {}
+        self.failure: Dict[Edge, float] = {}
+        self.evidence: Dict[Edge, float] = {}
+        self.volatility: Dict[Node, float] = {}
+        self.last_traversals: Dict[Edge, int] = {}
+
+    def reset(self, graph, source, target, agents):
+        self.progress = {}
+        self.failure = {}
+        self.evidence = {}
+        self.volatility = {}
+        self.last_traversals = {}
+
+    @staticmethod
+    def optimal_contrarian_fraction(p: float, n: int, d: int) -> float:
+        """Maximize one-junction P(at least one crow takes the correct branch).
+
+        Assumes consensus is correct with probability p; each contrarian chooses
+        uniformly among the d-1 non-consensus branches.
+        """
+        if d <= 1 or n <= 1:
+            return 0.0
+        p = min(max(float(p), 1.0 / d), 1.0 - 1e-12)
+        a = ((1.0 - p) / (p * (d - 1))) ** (1.0 / (n - 1))
+        return float(a * (d - 1) / (d - 1 + a))
+
+    def _decay(self):
+        if not self.memory_enabled:
+            return
+        for store, rate in (
+            (self.progress, self.progress_decay),
+            (self.failure, self.failure_decay),
+            (self.evidence, self.evidence_decay),
+            (self.volatility, self.volatility_decay),
+        ):
+            for key in list(store):
+                store[key] *= rate
+                if store[key] < 1e-8:
+                    del store[key]
+
+    def _edge_score(self, graph, p, n, target, dist):
+        immediate = float(dist.get(p, 10**6) - dist.get(n, 10**6))
+        if not self.memory_enabled:
+            return self.immediate_weight * immediate
+        e = canon_edge(p, n)
+        pos = math.log1p(self.progress.get(e, 0.0))
+        neg = math.log1p(self.failure.get(e, 0.0))
+        vol = 0.5 * (self.volatility.get(p, 0.0) + self.volatility.get(n, 0.0))
+        return (
+            self.immediate_weight * immediate
+            + self.progress_weight * pos
+            - self.failure_weight * neg
+            - self.volatility_weight * math.log1p(vol)
+        )
+
+    def _consensus(self, graph, p, target):
+        nbrs = list(graph.neighbors(p))
+        if not nbrs:
+            return [], None, 1.0
+        dist = nx.single_source_shortest_path_length(graph, target)
+        scores = np.asarray([self._edge_score(graph, p, n, target, dist) for n in nbrs], dtype=float)
+        tau = max(self.consensus_temperature, 1e-8)
+        logits = scores / tau
+        logits -= logits.max()
+        probs = np.exp(logits)
+        probs /= probs.sum()
+        best = int(np.argmax(probs))
+        return nbrs, best, float(probs[best])
+
+    def choose_moves(self, graph, positions, target, rng):
+        grouped: Dict[Node, List[int]] = defaultdict(list)
+        for i, p in enumerate(positions):
+            grouped[p].append(i)
+
+        out = list(positions)
+        for p, idxs in grouped.items():
+            if p == target:
+                continue
+            nbrs, best_idx, p_consensus = self._consensus(graph, p, target)
+            if not nbrs:
+                continue
+            consensus = nbrs[best_idx]
+            alternatives = [n for j, n in enumerate(nbrs) if j != best_idx]
+
+            if self.contrarian_mode == "none" or not alternatives:
+                epsilon = 0.0
+            elif self.contrarian_mode == "fixed":
+                epsilon = min(max(self.fixed_epsilon, 0.0), 1.0)
+            elif self.contrarian_mode == "adaptive":
+                epsilon = self.optimal_contrarian_fraction(p_consensus, len(idxs), len(nbrs))
+            else:
+                raise ValueError(f"unknown contrarian_mode: {self.contrarian_mode}")
+
+            for agent_idx in idxs:
+                if alternatives and rng.random() < epsilon:
+                    out[agent_idx] = alternatives[int(rng.integers(len(alternatives)))]
+                else:
+                    out[agent_idx] = consensus
+        return out
+
+    def observe_transition(self, graph_before, positions_before, positions_after, target):
+        self._decay()
+        self.last_traversals = {}
+        if not self.memory_enabled:
+            return
+        dist = nx.single_source_shortest_path_length(graph_before, target)
+        for a, b in zip(positions_before, positions_after):
+            if a == b:
+                continue
+            e = canon_edge(a, b)
+            self.last_traversals[e] = self.last_traversals.get(e, 0) + 1
+            delta = float(dist.get(a, 10**6) - dist.get(b, 10**6))
+            self.evidence[e] = self.evidence.get(e, 0.0) + 1.0
+            if delta > 0:
+                self.progress[e] = self.progress.get(e, 0.0) + delta
+            else:
+                self.failure[e] = self.failure.get(e, 0.0) + 0.5 + max(0.0, -delta)
+
+    def observe_rewire(self, graph_after, rewires, positions, target):
+        if not self.memory_enabled:
+            return
+        for removed, added in rewires:
+            attack_mass = float(self.last_traversals.get(removed, 0))
+            self.failure[removed] = self.failure.get(removed, 0.0) + 1.0 + attack_mass
+            for node in removed:
+                self.volatility[node] = self.volatility.get(node, 0.0) + 1.0
+            for node in added:
+                self.volatility[node] = self.volatility.get(node, 0.0) + 0.35
+
+
+class PheromonePureConsensusPolicy(PheromoneConsensusPolicy):
+    name = "pheromone_consensus"
+
+    def __init__(self, **kwargs):
+        super().__init__(contrarian_mode="none", memory_enabled=True, **kwargs)
+
+
+class PheromoneFixedContrarianPolicy(PheromoneConsensusPolicy):
+    name = "pheromone_fixed25"
+
+    def __init__(self, epsilon: float = 0.25, **kwargs):
+        super().__init__(contrarian_mode="fixed", fixed_epsilon=epsilon, memory_enabled=True, **kwargs)
+
+
+class AdaptiveConsensusNoMemoryPolicy(PheromoneConsensusPolicy):
+    """Same consensus/contrarian machinery with all pheromone memory disabled."""
+
+    name = "adaptive_no_memory"
+
+    def __init__(self, **kwargs):
+        super().__init__(contrarian_mode="adaptive", memory_enabled=False, **kwargs)
