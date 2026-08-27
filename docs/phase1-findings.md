@@ -1,34 +1,38 @@
-# Phase 1 targeted diagnostic
+# Phase 1 findings — corrected status
 
-These are **two-seed mechanism checks**, not confirmatory evidence.
+The original two-seed table was a **diagnostic only** and must not be treated as evidence.
 
-Configuration: 4 agents, reactive-cut adversary, budget b=2, horizon 30.
+## Retracted interpretation
 
-## 4 parallel corridors
+The statement that equality between Physarum and fixed electrical flow on equal corridors was evidence that conductance adaptation was inert is retracted. Equal parallel corridors are a symmetry-dominated test for the canonical fixed-source dynamics.
 
-Physarum and fixed electrical-flow routing produced identical outcomes in both seeds:
+## Validation added
 
-- seed A: success, work 20, mean effective support ~1.755
-- seed B: success, work 48, mean effective support ~1.934
+The branch now tests two known properties before evaluating adversarial navigation:
 
-This is evidence **against** attributing the result to conductance adaptation in this toy graph. Fixed electrical geometry was sufficient.
+1. Equal [4,4,4] corridors with uniform conductance preserve symmetry under canonical static Physarum dynamics.
+2. Unequal [3,5,7] corridors converge strongly to the unique shortest corridor.
 
-## 5x5 grid
+This reproduces the known static shortest-path behavior.
 
-Both seeds:
+## Disjoint baseline audit
 
-- shortest-path replanning failed;
-- random walk failed;
-- current disjoint-path baseline failed;
-- entropy-regularized replanning succeeded;
-- fixed electrical-flow routing succeeded;
-- generic reinforcement succeeded;
-- Physarum succeeded.
+The old "disjoint" implementation was not truly edge-disjoint and has been superseded by EdgeDisjointPathPolicy.
 
-This sharply weakens the naive claim "Physarum wins." The stronger hypothesis is that a family of policies with dispersed or less predictable traffic can evade an adversary designed around current shortest-path structure.
+The earlier 5x5 grid cell (k=4, b=2) is also structurally hostile to disjoint routing: corner-to-corner edge connectivity is only 2. Thus an adversary budget of 2 matches the maximum number of edge-disjoint escape routes at the source.
 
-## Interpretation
+## What remains worth testing
 
-The next experiment should test whether success is statistically associated with low top-b traffic mass / higher effective support **after controlling for progress toward the target**.
+Only the asymmetric adversarial comparison is treated as a possible research gap:
 
-If fixed electrical or entropy-regularized routing matches Physarum across held-out regimes, kill the Physarum-specific claim and retain the broader adversarial routing result.
+- fixed electrical-flow routing;
+- transient Physarum conductance adaptation;
+- true edge-disjoint routing;
+- shortest replanning;
+- generic reinforcement.
+
+Primary comparison: **Physarum vs fixed electrical, paired by seed.**
+
+If the adaptive policy does not produce a reproducible held-out improvement on asymmetric graphs, the Physarum-specific hypothesis is closed.
+
+Top-b mass / entropy remain diagnostics, not novelty claims.
