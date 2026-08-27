@@ -205,6 +205,198 @@ class ExactRewireGame:
         return None, results
 
 
+def moving_gateway_castle(n: int, d: int) -> tuple[nx.Graph, int, int]:
+    """Clique-core moving-gateway family G_{n,d}.
+
+    Vertices 0..n-2 form a clique. Target t=n-1 is adjacent to exactly the
+    first d core vertices. Source s=d is therefore a non-neighbor of t.
+
+    Preconditions: n>=3 and 1<=d<=n-2.
+    """
+    if n < 3 or not (1 <= d <= n - 2):
+        raise ValueError("require n>=3 and 1<=d<=n-2")
+    core = tuple(range(n - 1))
+    target = n - 1
+    source = d
+    g = nx.complete_graph(core)
+    g.add_node(target)
+    for v in range(d):
+        g.add_edge(v, target)
+    return g, source, target
+
+
+@dataclass(frozen=True)
+class GatewayCertificateResult:
+    n: int
+    d: int
+    budget: int
+    agents: int
+    lower_invariant_verified: bool
+    upper_force_verified: bool
+    lower_cases_checked: int
+    lower_moves_checked: int
+    upper_rewires_checked: int
+
+
+def _position_multisets(vertices: tuple[int, ...], agents: int):
+    """All sorted multisets of agent positions on the supplied vertices."""
+    from itertools import combinations_with_replacement
+    return combinations_with_replacement(vertices, agents)
+
+
+def verify_moving_gateway_threshold(
+    n: int,
+    d: int,
+    *,
+    budget: Optional[int] = None,
+) -> GatewayCertificateResult:
+    """Mechanically verify the two theorem certificates for G_{n,d}.
+
+    Candidate theorem (O3p timing, b>=d):
+        K* = n-d.
+
+    Lower certificate:
+      For k=n-d-1, enumerate every d-gateway set S and every sorted k-agent
+      position multiset P disjoint from S. Enumerate every legal joint move
+      that does not already reach t. After the move, at least d core vertices
+      are unoccupied, so the adversary can choose d of them as the next target
+      neighborhood. Replacing S\\U by U\\S uses at most d<=b one-for-one swaps
+      and restores the invariant.
+
+    Upper certificate:
+      For k=n-d, place agents on n-d distinct core vertices after round 1.
+      Enumerate every legal adversary rewire from the initial graph. Since every
+      successor has lambda(s,t)>=d, deg(t)>=d; only d-1 core vertices are
+      unoccupied, so at least one target neighbor is occupied and wins next
+      round before another edit.
+
+    The lower certificate is an inductive invariant and therefore proves
+    indefinite avoidance, not merely failure up to a chosen finite horizon.
+    """
+    if budget is None:
+        budget = d
+    if budget < d:
+        raise ValueError("candidate theorem requires budget>=d")
+    g0, source, target = moving_gateway_castle(n, d)
+    core = tuple(range(n - 1))
+
+    # ---- lower side: k=n-d-1 loses forever under the relocation invariant.
+    k_low = n - d - 1
+    lower_cases = 0
+    lower_moves = 0
+    lower_ok = True
+
+    for gateways in combinations(core, d):
+        gateway_set = set(gateways)
+        base = nx.complete_graph(core)
+        base.add_node(target)
+        for v in gateways:
+            base.add_edge(v, target)
+
+        allowed_start_vertices = tuple(v for v in core if v not in gateway_set)
+        for positions in _position_multisets(allowed_start_vertices, k_low):
+            lower_cases += 1
+            # Invariant: no crow begins adjacent to t.
+            if gateway_set.intersection(positions):
+                lower_ok = False
+                break
+
+            # Enumerate every controller move in this invariant state.
+            choices = []
+            for p in positions:
+                choices.append(tuple(sorted({p, *base.neighbors(p)})))
+            for moved_raw in product(*choices):
+                moved = tuple(sorted(map(int, moved_raw)))
+                lower_moves += 1
+
+                # Under the invariant no agent can reach t in one move: only
+                # gateway vertices are adjacent to t, and none was occupied
+                # at the start of the round.
+                if target in moved:
+                    lower_ok = False
+                    break
+
+                occupied = set(moved)
+                free_core = [v for v in core if v not in occupied]
+                if len(free_core) < d:
+                    lower_ok = False
+                    break
+
+                next_gateways = set(free_core[:d])
+                removals = gateway_set - next_gateways
+                additions = next_gateways - gateway_set
+                swaps = len(removals)
+                if swaps != len(additions) or swaps > d or swaps > budget:
+                    lower_ok = False
+                    break
+
+                # Construct the adversary's certificate successor explicitly.
+                nxt = base.copy()
+                for v in removals:
+                    nxt.remove_edge(v, target)
+                for v in additions:
+                    if nxt.has_edge(v, target):
+                        lower_ok = False
+                        break
+                    nxt.add_edge(v, target)
+                if not lower_ok:
+                    break
+                if len(nxt.edges()) != len(base.edges()):
+                    lower_ok = False
+                    break
+                if not nx.is_connected(nxt):
+                    lower_ok = False
+                    break
+                if nx.edge_connectivity(nxt, source, target) != d:
+                    lower_ok = False
+                    break
+                if next_gateways.intersection(occupied):
+                    lower_ok = False
+                    break
+            if not lower_ok:
+                break
+        if not lower_ok:
+            break
+
+    # ---- upper side: k=n-d wins by round 2 against every legal first rewire.
+    k_high = n - d
+    upper_ok = True
+    occupied = set(core[:k_high])
+    # Ensure the source can be one of the occupied vertices (waiting) and all
+    # others are reachable in one move because the core is a clique.
+    if source not in occupied:
+        occupied.remove(max(occupied))
+        occupied.add(source)
+    if len(occupied) != k_high:
+        upper_ok = False
+
+    game = ExactRewireGame(g0, source, target, budget=budget, lambda_min=d)
+    upper_rewires = 0
+    if upper_ok:
+        for edges in game.rewire_successors(game.initial_edges):
+            upper_rewires += 1
+            gg = game._graph(edges)
+            nbrs = set(gg.neighbors(target))
+            if len(nbrs) < d:
+                upper_ok = False
+                break
+            if not (nbrs & occupied):
+                upper_ok = False
+                break
+
+    return GatewayCertificateResult(
+        n=n,
+        d=d,
+        budget=budget,
+        agents=n-d,
+        lower_invariant_verified=lower_ok,
+        upper_force_verified=upper_ok,
+        lower_cases_checked=lower_cases,
+        lower_moves_checked=lower_moves,
+        upper_rewires_checked=upper_rewires,
+    )
+
+
 def worst_case_transient_cut_arrival(path_lengths: Iterable[int], budget: int) -> Optional[int]:
     """Exact worst-case arrival time for fixed edge-disjoint assigned paths.
 
