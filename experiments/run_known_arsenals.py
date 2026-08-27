@@ -62,7 +62,7 @@ def run(seeds=50, horizon=70, agents=(2, 4, 8)):
                                 CastleConfig(horizon=horizon, agents=k, adversary_budget=budget),
                                 seed=cell_seed, keep_trace=True, separate_rngs=True,
                             )
-                            m = trace_metrics(result.traces, attack_budget=max(1, budget))
+                            m = trace_metrics(result.traces, attack_budget=budget)
                             rows.append({
                                 "seed": seed, "graph": gname, "adversary": aname,
                                 "budget": budget, "agents": k, "policy": pname,
