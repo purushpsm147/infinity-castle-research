@@ -65,6 +65,7 @@ def run_episode(
             return RunResult(True, t, work, config.agents, list(positions), traces)
 
         rewires = adversary.rewire(g, positions, traffic, config.adversary_budget, rng)
+        policy.observe_rewire(g, rewires, positions, target)
         if config.preserve_connectivity and not nx.is_connected(g):
             raise AssertionError("adversary violated connectivity invariant")
         if keep_trace:
