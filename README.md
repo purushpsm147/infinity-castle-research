@@ -62,6 +62,20 @@ pytest
 python experiments/run_gap_test.py --seeds 30 --horizon 45 --out results/gap_test.csv
 ```
 
+## Pheromone / consensus experiment
+
+A second preregistered experiment tested shared evaporating pheromone memory plus consensus/contrarian population splitting.
+
+The first frozen gate **failed**:
+- 12 hostile cells;
+- shared-memory wins over the matched no-memory control: 0;
+- adaptive-contrarian wins over pure consensus: 5;
+- cells showing both benefits: 0.
+
+The current interpretation is that avoiding consensus collapse helped, while the added pheromone memory did not justify parameter tuning. See [docs/pheromone-result.md](docs/pheromone-result.md).
+
+The broad mechanism also overlaps heavily with adversarial bandits/expert advice and adversarial MDPs; see [docs/prior-art-online-learning.md](docs/prior-art-online-learning.md).
+
 ## Research discipline
 
-A null is allowed to stay null. The current Physarum line is closed unless a materially different, literature-grounded question is identified first.
+A null is allowed to stay null. Neither the Physarum line nor the current pheromone-memory line is open for parameter tuning. Any new phase must first identify the nearest primary literature, state a precise uncovered question, and preregister a held-out evaluation.
