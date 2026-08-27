@@ -33,3 +33,18 @@ Before adding another algorithm or application:
 4. define a falsifiable experiment before implementation.
 
 If that review does not expose a genuine gap, do not extend the project.
+
+
+## Pheromone consensus branch — closed gate
+- [x] add shared progress/failure/volatility memory
+- [x] add consensus and fixed/adaptive contrarian variants
+- [x] separate policy/adversary RNG streams
+- [x] pair policies on identical adversary RNG streams
+- [x] run frozen 30-seed gate
+- [x] audit EXP3/EXP4/adversarial-MDP prior art
+- [x] apply stop rule
+
+### Verdict
+Shared pheromone memory produced 0 preregistered wins over the matched no-memory adaptive control. Adaptive exploration/contrarian behavior helped pure consensus in some hostile cells, but the combined mechanism did not pass the gate.
+
+No parameter optimization is scheduled. Any reopening must start with strong adversarial-learning baselines and a new preregistration.
