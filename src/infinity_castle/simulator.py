@@ -21,6 +21,7 @@ def run_episode(
     config: CastleConfig,
     seed: int = 0,
     keep_trace: bool = False,
+    separate_rngs: bool = False,
 ) -> RunResult:
     if source not in graph or target not in graph:
         raise ValueError("source and target must exist in graph")
@@ -30,7 +31,14 @@ def run_episode(
         raise ValueError("horizon must be positive")
 
     g = deepcopy(graph)
-    rng = np.random.default_rng(seed)
+    if separate_rngs:
+        policy_seed, adversary_seed = np.random.SeedSequence(seed).spawn(2)
+        policy_rng = np.random.default_rng(policy_seed)
+        adversary_rng = np.random.default_rng(adversary_seed)
+    else:
+        shared_rng = np.random.default_rng(seed)
+        policy_rng = shared_rng
+        adversary_rng = shared_rng
     positions: List = [source for _ in range(config.agents)]
     policy.reset(g, source, target, config.agents)
     adversary.reset(g, source, target)
@@ -42,7 +50,7 @@ def run_episode(
 
     for t in range(1, config.horizon + 1):
         before = list(positions)
-        proposed = policy.choose_moves(g, positions, target, rng)
+        proposed = policy.choose_moves(g, positions, target, policy_rng)
         if len(proposed) != len(positions):
             raise ValueError("policy returned wrong number of moves")
         traffic = Counter()
@@ -64,7 +72,7 @@ def run_episode(
                 traces.append(StepTrace(t, before, list(positions), dict(traffic), []))
             return RunResult(True, t, work, config.agents, list(positions), traces)
 
-        rewires = adversary.rewire(g, positions, traffic, config.adversary_budget, rng)
+        rewires = adversary.rewire(g, positions, traffic, config.adversary_budget, adversary_rng)
         policy.observe_rewire(g, rewires, positions, target)
         if config.preserve_connectivity and not nx.is_connected(g):
             raise AssertionError("adversary violated connectivity invariant")
