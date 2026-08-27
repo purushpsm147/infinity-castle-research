@@ -29,3 +29,20 @@ def connected_erdos_renyi(n: int = 36, p: float = 0.12, seed: int = 0):
             target = max(lengths, key=lengths.get)
             return g, 0, target
     raise RuntimeError("failed to sample a connected Erdos-Renyi graph")
+
+
+def parallel_corridors(routes: int = 4, length: int = 6):
+    """m internally-disjoint equal-length corridors between source and target."""
+    if routes < 1 or length < 2:
+        raise ValueError("routes >=1 and length >=2 required")
+    g = nx.Graph()
+    source = ("s", 0)
+    target = ("t", length)
+    for r in range(routes):
+        prev = source
+        for j in range(1, length):
+            cur = (r, j)
+            g.add_edge(prev, cur)
+            prev = cur
+        g.add_edge(prev, target)
+    return g, source, target
