@@ -79,3 +79,21 @@ The broad mechanism also overlaps heavily with adversarial bandits/expert advice
 ## Research discipline
 
 A null is allowed to stay null. Neither the Physarum line nor the current pheromone-memory line is open for parameter tuning. Any new phase must first identify the nearest primary literature, state a precise uncovered question, and preregister a held-out evaluation.
+
+
+## Feasibility frontier / exact rewiring threshold
+
+The project then stopped inventing new policies and tested a narrow resource-threshold question with exact minimax backward induction.
+
+For a five-node K_{2,3} castle under O3p one-for-one rewiring, H=6:
+
+| b | lambda_min=1 | lambda_min=2 | lambda_min=3 |
+|---:|---:|---:|---:|
+| 1 | K*=2 | K*=2 | K*=2 |
+| 2 | K*=3 | K*=3 | K*=2 |
+
+The preregistered signal K* > b+1 never occurred. The exact finite experiment therefore found **no rewiring penalty above the bounded-cut sufficiency floor**. In the strongest-connectivity cell, two agents sufficed even for b=2, emphasizing that b+1 is sufficient in the cut model, not a universal lower bound.
+
+See [docs/exact-rewire-results.md](docs/exact-rewire-results.md) and [docs/exact-rewire-preregistration.md](docs/exact-rewire-preregistration.md).
+
+The earlier known-arsenal screen likewise found 0/81 provisionally fortified hostile cells. No novel threshold or new navigation algorithm is currently claimed.
