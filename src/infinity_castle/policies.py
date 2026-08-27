@@ -275,3 +275,43 @@ class ElectricalFlowPolicy(PhysarumPolicy):
     def observe_transition(self, graph_before, positions_before, positions_after, target):
         self._sync(graph_before)
         return None
+
+
+class EdgeDisjointPathPolicy(Policy):
+    """Allocate co-located agents across actually edge-disjoint s-t paths.
+
+    Unlike the legacy DisjointPathPolicy, this baseline does not infer
+    "disjointness" from distinct first hops of shortest-simple paths.
+    If fewer edge-disjoint paths exist than agents, paths are reused.
+    """
+
+    name = "edge_disjoint"
+
+    def choose_moves(self, graph, positions, target, rng):
+        grouped: Dict[Node, List[int]] = defaultdict(list)
+        for i, p in enumerate(positions):
+            grouped[p].append(i)
+
+        result = list(positions)
+        for p, idxs in grouped.items():
+            if p == target:
+                continue
+            try:
+                paths = list(nx.edge_disjoint_paths(graph, p, target))
+            except (nx.NetworkXNoPath, nx.NetworkXError):
+                paths = []
+
+            paths = [path for path in paths if len(path) > 1]
+            if not paths:
+                nbrs = list(graph.neighbors(p))
+                if not nbrs:
+                    continue
+                for j, agent_idx in enumerate(idxs):
+                    result[agent_idx] = nbrs[j % len(nbrs)]
+                continue
+
+            # Stable ordering makes the baseline deterministic for a fixed graph.
+            paths.sort(key=lambda path: (len(path), tuple(map(repr, path))))
+            for j, agent_idx in enumerate(idxs):
+                result[agent_idx] = paths[j % len(paths)][1]
+        return result
