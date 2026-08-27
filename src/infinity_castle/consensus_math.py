@@ -23,7 +23,12 @@ def junction_success_probability(p: float, n: int, d: int, epsilon: float) -> fl
 
 
 def optimal_contrarian_fraction(p: float, n: int, d: int) -> float:
-    """Closed-form epsilon maximizing junction_success_probability.
+    """Closed-form epsilon maximizing *only* junction_success_probability.
+
+    This is a one-junction toy optimum, not a trajectory-level or adversarial
+    castle optimum. It assumes p is a calibrated probability that consensus is
+    correct and does not model common-cause failure when a demon attacks a
+    shared corridor.
 
     For n=1, following the most-probable branch is optimal whenever p >= 1/d.
     """
