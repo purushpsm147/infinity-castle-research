@@ -1,0 +1,27 @@
+name: gateway-dwell-theorem-b
+
+on:
+  push:
+    branches:
+      - research/gateway-dwell-theorem-b
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m pip install -e .[dev]
+      - run: pytest
+      - name: Validate Theorem B threshold certificates
+        run: python experiments/run_gateway_dwell_theorem_b.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gateway-dwell-theorem-b
+          path: |
+            results/gateway_dwell_theorem_b.csv
+            results/gateway_dwell_theorem_b.json
