@@ -133,6 +133,19 @@ def test_slack_distance_domination_equivalence_on_two_connected_core():
     assert rho == math.ceil((9 - 1) / 3)
 
 
+def test_sparse_core_can_have_proper_nonempty_admissible_family():
+    core = nx.path_graph(5)
+    family = admissible_gateway_sets(core, source=0, d=2)
+
+    # The endpoint source has core degree one. Achieving lambda(s,t)>=2
+    # therefore requires the direct source-target gateway edge.
+    assert set(family) == {(0, 1), (0, 2), (0, 3), (0, 4)}
+
+    rho, witness, _ = distance_transversal_number(core, source=0, d=2, tau=0)
+    assert rho == 1
+    assert witness == (0,)
+
+
 def test_nonempty_admissible_family_is_required():
     # On a path endpoint, even if the source itself is a gateway, its
     # augmented degree is at most two. Therefore lambda(s,t)>=3 is impossible.
