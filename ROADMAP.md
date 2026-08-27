@@ -48,3 +48,25 @@ If that review does not expose a genuine gap, do not extend the project.
 Shared pheromone memory produced 0 preregistered wins over the matched no-memory adaptive control. Adaptive exploration/contrarian behavior helped pure consensus in some hostile cells, but the combined mechanism did not pass the gate.
 
 No parameter optimization is scheduled. Any reopening must start with strong adversarial-learning baselines and a new preregistration.
+
+
+## Feasibility frontier — exact bounded rewiring
+- [x] retire the unproven Castle Trilemma
+- [x] formalize the fixed-footprint b+1 reachability floor
+- [x] freeze O3p one-for-one rewiring semantics
+- [x] enforce lambda_min, connectivity, and fixed edge count
+- [x] add exact backward-induction minimax solver
+- [x] validate static, transient-cut, rewire-invariant, and temporal-Menger landmarks
+- [x] preregister K*(b, lambda_min; H=6) before solving
+- [x] run exact finite game in Actions
+- [x] apply the preregistered stop rule
+
+### Result
+
+K*:
+- b=1: 2 for lambda_min in {1,2,3}
+- b=2: 3 for lambda_min in {1,2}, 2 for lambda_min=3
+
+No cell had K* > b+1. The proposed rewiring penalty did not appear on the frozen instance.
+
+No graph/horizon/timing expansion is scheduled to rescue the hypothesis. A future extension requires a fresh literature-grounded reason independent of this result.
