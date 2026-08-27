@@ -1,9 +1,6 @@
 name: exact-rewire-threshold
 
 on:
-  push:
-    branches:
-      - research/exact-rewire-threshold
   workflow_dispatch:
 
 jobs:
