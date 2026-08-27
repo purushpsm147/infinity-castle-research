@@ -97,3 +97,30 @@ The preregistered signal K* > b+1 never occurred. The exact finite experiment th
 See [docs/exact-rewire-results.md](docs/exact-rewire-results.md) and [docs/exact-rewire-preregistration.md](docs/exact-rewire-preregistration.md).
 
 The earlier known-arsenal screen likewise found 0/81 provisionally fortified hostile cells. No novel threshold or new navigation algorithm is currently claimed.
+
+
+## Moving-gateway threshold theorem
+
+A later theorem-first phase identified a graph family that the earlier six-edge exact experiment structurally could not realize.
+
+For the clique-core family G_{n,d} under O3p one-for-one rewiring, with b>=d and every snapshot constrained by lambda(s,t)>=d, the proved threshold is
+
+[
+K^*_{\infty}(G_{n,d}) = n-d.
+]
+
+When d=b,
+
+[
+K^*_{\infty}-(b+1)=n-2b-1,
+]
+
+so the gap above the fixed-footprint cut sufficiency value grows unboundedly with n.
+
+This means **snapshot connectivity and per-round edit budget alone do not bound the number of persistent agents needed for sure reachability** in this model.
+
+Five frozen semantics regressions all passed in GitHub Actions, including exhaustive verification of 109,375 controller moves for the (n,d,b)=(6,1,1) lower certificate. The smallest case independently agrees with the generic exact solver.
+
+See [docs/moving-gateway-theorem.md](docs/moving-gateway-theorem.md) and [docs/moving-gateway-results.md](docs/moving-gateway-results.md).
+
+Novelty status remains cautious: the theorem is validated under the model, but an equivalent-result literature audit is still required before a publication claim.

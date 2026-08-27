@@ -70,3 +70,28 @@ K*:
 No cell had K* > b+1. The proposed rewiring penalty did not appear on the frozen instance.
 
 No graph/horizon/timing expansion is scheduled to rescue the hypothesis. A future extension requires a fresh literature-grounded reason independent of this result.
+
+
+## Moving-gateway theorem — validated
+- [x] state exact candidate theorem K*_infty(G_{n,d})=n-d
+- [x] prove lower relocation invariant for k<=n-d-1
+- [x] prove upper two-round win for k=n-d
+- [x] freeze five regression instances before execution
+- [x] mechanically verify both sides at every threshold
+- [x] independently smoke-test the smallest case with the generic exact solver
+- [x] park the validation workflow after success
+
+### Result
+
+All five frozen regressions passed.
+
+The theorem establishes that, under the stated O3p replacement semantics, instantaneous lambda_min and edit budget b alone do not yield an n-independent redundancy bound. At d=b the exact threshold is n-b.
+
+### Publication status
+
+Potential theorem contribution, not yet a novelty claim. Before paper drafting:
+1. audit primary literature for an equivalent multi-agent replacement-game threshold;
+2. position explicitly against dynamic-network relocation lower bounds, Gotoh-style exploration thresholds, Nemesis, interdiction, and temporal reachability;
+3. investigate a persistence condition that restores a bounded redundancy guarantee.
+
+Do not add another heuristic policy.
