@@ -10,7 +10,7 @@ from infinity_castle.analytics import trace_metrics
 from infinity_castle.graphs import grid_graph, ladder_graph, parallel_corridors
 from infinity_castle.model import CastleConfig
 from infinity_castle.policies import (
-    DisjointPathPolicy,
+    EdgeDisjointPathPolicy,
     ElectricalFlowPolicy,
     EntropyRegularizedPolicy,
     GenericReinforcementPolicy,
@@ -23,7 +23,7 @@ from infinity_castle.simulator import run_episode
 POLICIES = {
     "random": RandomWalkPolicy,
     "replan": ReplanShortestPathPolicy,
-    "disjoint": DisjointPathPolicy,
+    "edge_disjoint": EdgeDisjointPathPolicy,
     "entropy_replan": EntropyRegularizedPolicy,
     "electrical": ElectricalFlowPolicy,
     "reinforcement": GenericReinforcementPolicy,
