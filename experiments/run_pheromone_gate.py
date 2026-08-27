@@ -49,11 +49,12 @@ def graph_cases(seed: int):
 def run(seeds: int = 30, horizon: int = 70, agents: int = 8) -> pd.DataFrame:
     rows = []
     for seed in range(seeds):
-        for graph_name, (graph, source, target) in graph_cases(seed).items():
-            for adversary_name, adversary_factory in ADVERSARIES.items():
+        for graph_index, (graph_name, (graph, source, target)) in enumerate(graph_cases(seed).items()):
+            for adversary_index, (adversary_name, adversary_factory) in enumerate(ADVERSARIES.items()):
                 budgets = (0,) if adversary_name == "none" else (1, 2)
                 for budget in budgets:
-                    for policy_index, (policy_name, policy_factory) in enumerate(POLICIES.items()):
+                    cell_seed = seed * 100003 + graph_index * 1009 + adversary_index * 131 + budget * 17
+                    for policy_name, policy_factory in POLICIES.items():
                         cfg = CastleConfig(
                             horizon=horizon,
                             agents=agents,
@@ -66,7 +67,7 @@ def run(seeds: int = 30, horizon: int = 70, agents: int = 8) -> pd.DataFrame:
                             policy_factory(),
                             adversary_factory(),
                             cfg,
-                            seed=seed * 100003 + budget * 101 + policy_index * 17,
+                            seed=cell_seed,
                             keep_trace=True,
                             separate_rngs=True,
                         )
