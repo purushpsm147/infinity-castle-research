@@ -163,8 +163,31 @@ Key corollaries:
 - deciding K*<=k is NP-complete already for d=1,tau=1 via DOMINATING SET.
 
 Theorem B does **not** subsume Theorem A because its adversary cannot edit the
-core. The globally rewritable model with per-edge persistence is explicitly
-parked as Theorem C.
+core.
 
 See [docs/theorem-b-gateway-dwell.md](docs/theorem-b-gateway-dwell.md) and
 [docs/theorem-b-results.md](docs/theorem-b-results.md).
+
+## Theorem C — global per-edge persistence foothold
+
+The globally rewritable persistence class C_tau keeps Theorem A's O3p
+one-for-one rewiring power but locks each newly inserted edge for tau additional
+post-move edit phases.
+
+The mechanical artifact checks two manuscript claims only:
+
+- C_0 has exactly the same legal edge-state successors as the base Theorem A
+  replacement model on frozen G_{n,1} instances;
+- for b=d=1 and tau>=1 on the clique-core family,
+
+      K*_H(G_{n,1}; C_tau) = K*_infty(G_{n,1}; C_tau) = 1
+
+  for every H>=3.
+
+Frozen certificates cover n in {3,4,5,6,7} and tau in {1,2,3}, and a small
+independent exact-game smoke test checks the boundary on G_{4,1}.
+
+This is **not** a general solution of C_tau. No d=2 or b=2 sweep is included;
+the b,d>=2 globally rewritable persistence regime remains open.
+
+See [docs/theorem-c-global-persistence.md](docs/theorem-c-global-persistence.md).
