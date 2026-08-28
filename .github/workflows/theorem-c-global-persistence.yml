@@ -1,6 +1,15 @@
 name: theorem-c-global-persistence
 
 on:
+  push:
+    branches:
+      - "research/theorem-c-global-persistence"
+    paths:
+      - "src/infinity_castle/global_persistence.py"
+      - "tests/test_global_persistence.py"
+      - "experiments/run_theorem_c_global_persistence.py"
+      - "docs/theorem-c-global-persistence.md"
+      - ".github/workflows/theorem-c-global-persistence.yml"
   pull_request:
     paths:
       - "src/infinity_castle/global_persistence.py"
