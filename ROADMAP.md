@@ -125,13 +125,32 @@ covering problem.
 Theorem B uses a weaker adversary than Theorem A. It does not answer the globally
 rewritable per-edge-persistence question.
 
-## Theorem C — PARKED
+## Theorem C — global per-edge persistence foothold — validated
 
-No code, conjecture, or experiment is scheduled yet for:
-- globally rewritable cores with tau-persistent edges;
+The manuscript now names the globally rewritable persistence hierarchy C_tau.
+
+- [x] define per-edge lock semantics consistent with O3p timing
+- [x] mechanically verify the semantic boundary C_0 = the base replacement model
+- [x] prove the b=d=1 clique foothold for tau>=1
+- [x] freeze n in {3,4,5,6,7} and tau in {1,2,3} before CI
+- [x] exhaustively verify all first successors and all critical second successors
+- [x] independently smoke-test G_{4,1}: C_0 needs k=3 by H=2, while C_1 lets k=1 win by H=3
+- [ ] general b,d>=2 characterization — OPEN, not scheduled
+- [ ] robust temporal reachability characterization — OPEN, not scheduled
+
+### Result
+
+The validated proposition is
+
+    K*_H(G_{n,1}; C_tau) = K*_infty(G_{n,1}; C_tau) = 1
+
+for tau>=1 and H>=3, with b=d=1.
+
+This does not solve the full Theorem C model. The repository checks only the
+proved manuscript foothold and the C_0/A semantics; no exploratory d=2 or b=2
+sweep is part of this phase.
+
+Other parked variants remain:
 - b<d;
-- staggered gateway dwell;
+- staggered gateway dwell / heterogeneous edge lifetimes;
 - repeated delivery / repeated targets.
-
-Theorem C remains closed until Theorem A+B are written as a manuscript and the
-related-work positioning is complete.
